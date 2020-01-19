@@ -21,40 +21,23 @@
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef SRC_DL_DECODER_H_
-#define SRC_DL_DECODER_H_
+#ifndef SRC_X86_DECODER_H_
+#define SRC_X86_DECODER_H_
+
 #include <capstone/capstone.h>
 #include <souffle/SouffleInterface.h>
 #include <gtirb/gtirb.hpp>
 #include "DatalogUtils.h"
 #include "DlOperandTable.h"
+#include "DlDecoder.h"
 
 #include <vector>
-
-template <class Content>
-struct DlData
+class X86Decoder : public DlDecoder
 {
-    gtirb::Addr ea;
-    Content content;
-};
-
-class DlDecoder
-{
-protected:
-    csh csHandle;
-    DlOperandTable op_dict;
-    std::vector<DlInstruction> instructions;
-    std::vector<gtirb::Addr> invalids;
-    std::vector<DlData<gtirb::Addr>> data_addresses;
-    std::vector<DlData<unsigned char>> data_bytes;
-    void decodeSection(gtirb::ImageByteMap::const_range& sectionBytes, uint64_t size,
-                       gtirb::Addr ea);
-    void loadInputs(souffle::SouffleProgram* prog, gtirb::Module& module);
-    void storeDataSection(gtirb::ImageByteMap::const_range& sectionBytes, uint64_t size,
-                          gtirb::Addr ea, gtirb::Addr min_address, gtirb::Addr max_address);
-
 public:
+    X86Decoder();
+    ~X86Decoder();
     souffle::SouffleProgram* decode(gtirb::Module& module);
 };
 
-#endif /* SRC_DL_DECODER_H_ */
+#endif /* SRC_X86_DECODER_H_ */
