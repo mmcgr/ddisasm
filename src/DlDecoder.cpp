@@ -144,29 +144,40 @@ souffle::SouffleProgram *DlDecoder::decode(gtirb::Module &module)
     auto minMax = module.getImageByteMap().getAddrMinMax();
     auto *extraInfoTable =
         module.getAuxData<std::map<gtirb::UUID, SectionProperties>>("elfSectionProperties");
+    auto *dwarfInfoTable =
+        module.getAuxData<std::map<gtirb::UUID, SectionProperties>>("elfSectionProperties");
+
     if(!extraInfoTable)
         throw std::logic_error("missing elfSectionProperties AuxData table");
+
+
     for(auto &section : module.sections())
     {
         auto found = extraInfoTable->find(section.getUUID());
-        if(found == extraInfoTable->end())
-            throw std::logic_error("Section " + section.getName()
-                                   + " missing from elfSectionProperties AuxData table");
-        SectionProperties &extraInfo = found->second;
-        if(isExeSection(extraInfo))
-        {
-            gtirb::ImageByteMap::const_range bytes =
-                gtirb::getBytes(module.getImageByteMap(), section);
-            decodeSection(bytes, bytes.size(), section.getAddress());
-            storeDataSection(bytes, bytes.size(), section.getAddress(), minMax.first,
-                             minMax.second);
-        }
-        if(isNonZeroDataSection(extraInfo))
-        {
-            gtirb::ImageByteMap::const_range bytes =
-                gtirb::getBytes(module.getImageByteMap(), section);
-            storeDataSection(bytes, bytes.size(), section.getAddress(), minMax.first,
-                             minMax.second);
+        auto dwarfFound = dwarfInfoTable->find(section.getUUID());
+
+        //If the section is not dwarf, analyse it.
+        if(dwarfFound == dwarfInfoTable->end()) {
+
+            if(found == extraInfoTable->end())
+                throw std::logic_error("Section " + section.getName()
+                                       + " missing from elfSectionProperties AuxData table");
+            SectionProperties &extraInfo = found->second;
+            if(isExeSection(extraInfo))
+            {
+                gtirb::ImageByteMap::const_range bytes =
+                    gtirb::getBytes(module.getImageByteMap(), section);
+                decodeSection(bytes, bytes.size(), section.getAddress());
+                storeDataSection(bytes, bytes.size(), section.getAddress(), minMax.first,
+                                 minMax.second);
+            }
+            if(isNonZeroDataSection(extraInfo))
+            {
+                gtirb::ImageByteMap::const_range bytes =
+                    gtirb::getBytes(module.getImageByteMap(), section);
+                storeDataSection(bytes, bytes.size(), section.getAddress(), minMax.first,
+                                 minMax.second);
+            }
         }
     }
     if(auto prog = souffle::ProgramFactory::newInstance("souffle_disasm"))

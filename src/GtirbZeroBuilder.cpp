@@ -104,6 +104,8 @@ void buildByteMap(gtirb::Module &module, std::shared_ptr<BinaryReader> binary)
 void buildSections(gtirb::Module &module, std::shared_ptr<BinaryReader> binary,
                    gtirb::Context &context)
 {
+    std::map<gtirb::UUID, SectionProperties> dwarfSections;
+    std::map<gtirb::UUID, SectionProperties> allSections;
     std::map<gtirb::UUID, SectionProperties> sectionProperties;
     for(auto &binSection : binary->get_sections())
     {
@@ -114,9 +116,46 @@ void buildSections(gtirb::Module &module, std::shared_ptr<BinaryReader> binary,
             module.addSection(section);
             sectionProperties[section->getUUID()] =
                 std::make_tuple(binSection.type, binSection.flags);
+        } else {
+            //Check if it is a DWARF section
+            static std::vector<std::string> sectionNames{
+                ".debug_abbrev",
+                ".debug_aranges",
+                ".debug_frame",
+                ".debug_info",
+                ".debug_line",
+                ".debug_loc",
+                ".debug_macinfo",
+                ".debug_types",
+                ".debug_str",
+                ".debug_ranges",
+                ".debug_pubnames",
+                ".debug_pubtypes"
+            };
+
+            auto gtirbName = binSection.name;
+            for(std::string sName : sectionNames)
+            {
+                if(gtirbName == sName)
+                {
+                    //Detected the debug section
+                    //Debug section isn't allocatable
+                    gtirb::Section *section = gtirb::Section::Create(
+                        context, binSection.name, gtirb::Addr(binSection.address), binSection.size);
+                    module.addSection(section);
+                    dwarfSections[section->getUUID()] =
+                        std::make_tuple(binSection.type, binSection.flags);;
+
+                    break;
+                }
+            }
         }
+        //Logs all sections in a separate aux component
+        allSections[section->getUUID()] = std::make_tuple(binSection.type, binSection.flags);
     }
     module.addAuxData("elfSectionProperties", std::move(sectionProperties));
+    module.addAuxData("dwarfSections", std::move(dwarfSections));
+    module.addAuxData("allSections", std::move(allSections))
 }
 
 gtirb::Symbol::StorageKind getSymbolType(uint64_t sectionIndex, std::string scope)
