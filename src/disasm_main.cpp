@@ -37,6 +37,8 @@
 #include "passes/FunctionInferencePass.h"
 #include "passes/NoReturnPass.h"
 #include "passes/SccPass.h"
+#include "DwarfMap.hpp"
+
 
 namespace po = boost::program_options;
 
@@ -74,6 +76,7 @@ int main(int argc, char **argv)
         ("ir", po::value<std::string>(), "GTIRB output file")           //
         ("json", po::value<std::string>(), "GTIRB json output file")    //
         ("asm", po::value<std::string>(), "ASM output file")            //
+        ("dwarf", "Dwarf analysis")           //
         ("debug", "generate assembler file with debugging information") //
         ("debug-dir", po::value<std::string>(),                         //
          "location to write CSV files for debugging")                   //
@@ -118,6 +121,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
+
     std::string filename = vm["input-file"].as<std::string>();
     std::cout << "Building the initial gtirb representation" << std::endl;
     gtirb::Context context;
@@ -126,12 +130,19 @@ int main(int argc, char **argv)
     LIEF::ENDIANNESS endianness;
     std::tie(ir, lief_arch, endianness) = buildZeroIR(filename, context);
 
+
     if(!ir)
     {
         std::cerr << "There was a problem loading the binary file " << filename << "\n";
         return 1;
     }
     gtirb::Module &module = *(ir->modules().begin());
+    DwarfMap dwarfMap(filename);
+    if(vm.count("dwarf") != 0) {
+        dwarfMap.extract_dwarf_data();
+        dwarfMap.flag_constsym(module);
+    }
+
     souffle::SouffleProgram *prog = nullptr;
 
     cs_arch arch;

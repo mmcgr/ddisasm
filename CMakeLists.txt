@@ -133,6 +133,19 @@ if(NOT CAPSTONE)
   )
 endif()
 
+# ---------------------------------------------------------------------------
+# DWARF
+# ---------------------------------------------------------------------------
+if (BUILD_SHARED_LIBS)
+  find_library(DWARF NAMES dwarf)
+endif()
+
+if(NOT DWARF)
+  message(FATAL_ERROR
+  " No DWARF installation found.\n")
+endif()
+
+
 # Use LIEF with 'find_package()'
 # ==============================
 

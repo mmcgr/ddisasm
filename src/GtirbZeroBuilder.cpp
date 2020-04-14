@@ -109,15 +109,16 @@ void buildSections(gtirb::Module &module, std::shared_ptr<BinaryReader> binary,
     std::map<gtirb::UUID, SectionProperties> sectionProperties;
     for(auto &binSection : binary->get_sections())
     {
+        gtirb::Section *section = gtirb::Section::Create(
+                context, binSection.name, gtirb::Addr(binSection.address), binSection.size);
         if(isAllocatedSection(binSection.flags))
         {
-            gtirb::Section *section = gtirb::Section::Create(
-                context, binSection.name, gtirb::Addr(binSection.address), binSection.size);
+
             module.addSection(section);
             sectionProperties[section->getUUID()] =
                 std::make_tuple(binSection.type, binSection.flags);
         } else {
-            //Check if it is a DWARF section
+            //TODO: Clean up this component
             static std::vector<std::string> sectionNames{
                 ".debug_abbrev",
                 ".debug_aranges",
@@ -155,7 +156,7 @@ void buildSections(gtirb::Module &module, std::shared_ptr<BinaryReader> binary,
     }
     module.addAuxData("elfSectionProperties", std::move(sectionProperties));
     module.addAuxData("dwarfSections", std::move(dwarfSections));
-    module.addAuxData("allSections", std::move(allSections))
+    module.addAuxData("allSections", std::move(allSections));
 }
 
 gtirb::Symbol::StorageKind getSymbolType(uint64_t sectionIndex, std::string scope)

@@ -165,7 +165,8 @@ add_library(disasm_main STATIC
   ExceptionDecoder.cpp
   GtirbModuleDisassembler.cpp
   GtirbZeroBuilder.cpp
-  LIEFBinaryReader.cpp)
+  LIEFBinaryReader.cpp
+  DwarfMap.cpp)
 
 target_compile_definitions(disasm_main PRIVATE __EMBEDDED_SOUFFLE__)
 target_compile_definitions(disasm_main PRIVATE RAM_DOMAIN_SIZE=64)
@@ -271,6 +272,7 @@ target_link_libraries(disasm_main
   ${EXPERIMENTAL_LIB}
   ${LIBCPP_ABI}
   ${LIEF_LIBRARIES}
+  ${DWARF}
 )
 
 # Now combine the static library and generated code into an
