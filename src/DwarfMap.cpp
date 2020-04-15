@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "DwarfMap.hpp"
+#include "AuxDataSchema.h"
 
 
 DwarfMap::DwarfMap(const std::string filename) {
@@ -155,7 +156,7 @@ void DwarfMap::flag_constsym(gtirb::Module& module) {
         in_debug[symentry.getUUID()] = std::make_tuple(symentry.getUUID(), found);
 
     }
-    module.addAuxData("flaggedSymbols", std::move(in_debug));
+    module.addAuxData<gtirb::schema::FlaggedSymbols>(std::move(in_debug));
 }
 
 DwarfData::DwarfData(uint64_t addr,

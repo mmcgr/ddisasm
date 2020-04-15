@@ -27,20 +27,34 @@
 #ifndef GTIRB_ZERO_BUILDER_H_
 #define GTIRB_ZERO_BUILDER_H_
 
-struct ExtraSymbolInfo
+struct ElfSymbolInfo
 {
-    uint64_t size;
-    std::string type;
-    std::string scope;
-    uint64_t sectionIndex;
+    uint64_t Size;
+    std::string Type;
+    std::string Scope;
+    std::string Visibility;
+    uint64_t SectionIndex;
+};
+
+struct SymbolPrefixInfo {
+    uint64_t index;
+    std::string prefix;
 };
 
 template <>
-struct gtirb::auxdata_traits<ExtraSymbolInfo>
+struct gtirb::auxdata_traits<SymbolPrefixInfo>
 {
-    static std::string type_id();
-    static void toBytes(const ExtraSymbolInfo& Object, to_iterator It);
-    static from_iterator fromBytes(ExtraSymbolInfo& Object, from_iterator It);
+    static std::string type_name();
+    static void toBytes(const SymbolPrefixInfo& Object, to_iterator It);
+    static from_iterator fromBytes(SymbolPrefixInfo& Object, from_iterator It);
+};
+
+template <>
+struct gtirb::auxdata_traits<ElfSymbolInfo>
+{
+    static std::string type_name();
+    static void toBytes(const ElfSymbolInfo& Object, to_iterator It);
+    static from_iterator fromBytes(ElfSymbolInfo& Object, from_iterator It);
 };
 
 using SectionProperties = std::tuple<uint64_t, uint64_t>;

@@ -68,12 +68,14 @@ or loop) and considering the value with most steps.
 // mov reg immediate
 value_reg_edge(EA,Reg,EA,"NONE",0,Immediate):-
     def_used_for_address(EA,Reg),
-    op_immediate_and_reg(EA,"MOV",Reg,_,Immediate).
+    arch.move_operation(Operation),
+    op_immediate_and_reg(EA,Operation,Reg,_,Immediate).
 
 // mov DWORD from memory
 value_reg_edge(EA,Reg,EA,"NONE",0,Val):-
     def_used_for_address(EA,Reg),
-    instruction(EA,_,_,"MOV",Op1,Op2,0,0),
+    arch.move_operation(Operation),
+    instruction(EA,_,_,Operation,Op1,Op2,0,0),
     op_regdirect_contains_reg(Op2,Reg),
     op_indirect(Op1,"NONE","NONE","NONE",_,Offset,32),
     data_byte(Offset,Byte0),
@@ -85,7 +87,8 @@ value_reg_edge(EA,Reg,EA,"NONE",0,Val):-
 
 value_reg_edge(EA,Reg,EA,"NONE",0,Val):-
     def_used_for_address(EA,Reg),
-    instruction(EA,_,_,"MOV",Op1,Op2,0,0),
+    arch.move_operation(Operation),
+    instruction(EA,_,_,Operation,Op1,Op2,0,0),
     op_regdirect_contains_reg(Op2,Reg),
     op_indirect(Op1,_,_,_,_,_,32),
     pc_relative_operand(EA,1,Offset),
@@ -272,6 +275,7 @@ value_reg(EA,Reg_def,EA_third,Reg3,Mult*Mult2,Offset+Offset1+Offset2*Mult,Steps3
     EA != EA_def2,
     value_reg(EA_def2,Reg2,EA_third,Reg3,Mult2,Offset2,Steps2),
     EA != EA_third,
+    Reg3 != "NONE",
     Steps2+2 < StepLimit,
     // this is an empirical restriction. There is no logical problem
     // with having a negative multiplier but it appears in cases
@@ -294,6 +298,7 @@ value_reg(EA,Reg_def,EA_third,Reg3,Mult1,Offset+Offset1+Offset2*Mult,Steps3):-
     def_used(EA_def1,Reg1,EA,_),
     EA != EA_def1,
     value_reg(EA_def1,Reg1,EA_third,Reg3,Mult1,Offset1,Steps1),
+    Reg3 != "NONE",
     EA != EA_third,
     Steps1+2 < StepLimit,
 
