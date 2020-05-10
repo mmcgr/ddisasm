@@ -3,16 +3,22 @@ dist: bionic
 arch: amd64
 language: generic
 
+stages:
+  - Build
+  - DockeriseBase
+  - Dockerise
+
 jobs:
   include:
   - stage: Build
-    name: "Build dependencies"
+    name: "Build dependencies on amd"
+    arch: amd64
     services: docker
     before_script:
       - git clone https://github.com/binrats/gtirb
       - git clone https://github.com/binrats/gtirb-pprinter
-      - docker pull binrats/ddisasm-base
-      - docker run -d -t --name binrattester -w /ddisasm --mount src="$(pwd)",target=/ddisasm,type=bind binrats/ddisasm-base /bin/sh
+      - docker pull binrats/ddisasm-base:amd64-latest
+      - docker run -d -t --name binrattester -w /ddisasm --mount src="$(pwd)",target=/ddisasm,type=bind binrats/ddisasm-base:amd64-latest /bin/sh
     script:
       - docker exec binrattester /bin/sh -c "cd /ddisasm/gtirb && git checkout -b d3 D3.0 && cmake . -Bbuild && cd build && make install -j2"
       - docker exec binrattester /bin/sh -c "cd /ddisasm/gtirb-pprinter && cmake . -Bbuild && cd build && make install -j2"
@@ -21,14 +27,84 @@ jobs:
       - docker exec binrattester /bin/sh -c "ldconfig"
       - docker exec binrattester /bin/sh -c "cd /ddisasm/examples/ex1 && make && ddisasm --dwarf ex"
     after_script: docker container stop binrattester
+  - stage: Build
+    name: "Build dependencies on arm"
+    arch: arm64
+    services: docker
+    before_script:
+      - git clone https://github.com/binrats/gtirb
+      - git clone https://github.com/binrats/gtirb-pprinter
+      - docker pull binrats/ddisasm-base:arm64-latest
+      - docker run -d -t --name binrattester -w /ddisasm --mount src="$(pwd)",target=/ddisasm,type=bind binrats/ddisasm-base:arm64-latest /bin/sh
+    script:
+      - docker exec binrattester /bin/sh -c "cd /ddisasm/gtirb && git checkout -b d3 D3.0 && cmake . -Bbuild && cd build && make install -j32"
+      - docker exec binrattester /bin/sh -c "cd /ddisasm/gtirb-pprinter && cmake . -Bbuild && cd build && make install -j32"
+      - docker exec binrattester /bin/sh -c "cd /ddisasm && cmake -DLIEF_ROOT=/usr . -Bbuild && cd build && make install -j32"
+        # Now register the new libraries so they are usable
+      - docker exec binrattester /bin/sh -c "ldconfig"
+      - docker exec binrattester /bin/sh -c "cd /ddisasm/examples/ex1 && make && ddisasm --dwarf ex"
+    after_script: docker container stop binrattester
+
+    # This only needs to be updated if the dependencies need updating
+    #  - stage: DockeriseBase
+    #    name: "Build amd base docker images"
+    #    arch: amd64
+    #    services: docker
+    #    before_script:
+    #      - docker pull debian:buster
+    #    script:
+    #      - docker build -t binrats/ddisasm-base:amd64-latest binrats/amd64/ddisasm-base
+    #      - docker login -u mmcgr -p $DOCKER_TOKEN
+    #      - docker push binrats/ddisasm-base:amd64-latest
+    #  - stage: DockeriseBase
+    #    name: "Build arm base docker images"
+    #    arch: arm64
+    #    services: docker
+    #    before_script:
+    #      - docker pull debian:buster
+    #    script:
+    #      - docker build -t binrats/ddisasm-base:arm64-latest binrats/arm64/ddisasm-base
+    #      - docker login -u mmcgr -p $DOCKER_TOKEN
+    #      - docker push binrats/ddisasm-base:arm64-latest
+
   - stage: Dockerise
-    name: "Build docker images"
+    name: "Build amd 3.0 docker images"
     arch: amd64
     services: docker
     before_script:
-      - docker pull debian:buster
+      - docker pull binrats/ddisasm-base:amd64-latest
     script:
-      - docker build -t binrats/ddisasm-base:arm64-latest binrats/ddisasm-base
-      - docker build -t binrats/ddisasm:arm64-3.0 binrats/ddisasm3.0
-      - docker build -t binrats/ddisasm:arm64-latest binrats/ddisasm3.0
+      - docker build -t binrats/ddisasm:amd64-3.0 binrats/amd64/ddisasm3.0
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker push binrats/ddisasm:amd64-3.0
+  - stage: Dockerise
+    name: "Build amd lts docker images"
+    arch: amd64
+    services: docker
+    before_script:
+      - docker pull binrats/ddisasm-base:amd64-latest
+    script:
+      - docker build -t binrats/ddisasm:amd64-latest binrats/amd64/ddisasmLatest
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker push binrats/ddisasm:amd64-latest
+  - stage: Dockerise
+    name: "Build arm 3.0 docker images"
+    arch: arm64
+    services: docker
+    before_script:
+      - docker pull binrats/ddisasm-base:arm64-latest
+    script:
+      - docker build -t binrats/ddisasm:arm64-3.0 binrats/arm64/ddisasm3.0
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker push binrats/ddisasm:arm64-3.0
+  - stage: Dockerise
+    name: "Build arm lts docker images"
+    arch: arm64
+    services: docker
+    before_script:
+      - docker pull binrats/ddisasm-base:arm64-latest
+    script:
+      - docker build -t binrats/ddisasm:arm64-latest binrats/arm64/ddisasmLatest
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker push  binrats/ddisasm:arm64-latest
 

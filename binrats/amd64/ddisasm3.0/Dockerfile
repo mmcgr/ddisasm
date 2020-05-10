@@ -1,4 +1,4 @@
-FROM binrats/ddisasm-base:latest
+FROM binrats/ddisasm-base:amd64-latest
 
 WORKDIR /binrats
 
@@ -10,7 +10,7 @@ RUN cd /binrats/gtirb-pprinter && git checkout -b d3 D3.0 && cmake . -Bbuild && 
 
 RUN git clone https://github.com/binrats/ddisasm
 
-RUN cd /binrats/ddisasm && git checkout -b d3 D3.0 && cmake -DLIEF_ROOT=/usr . -Bbuild && cd build && make install -j1
+RUN cd /binrats/ddisasm && git checkout -b d3 D3.0 && cmake -DLIEF_ROOT=/usr . -Bbuild && cd build && make install -j2
 
 # Make sure the new libs are found
 RUN ldconfig
