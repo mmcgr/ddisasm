@@ -25,6 +25,8 @@ jobs:
   - stage: Build
     name: "Build dependencies"
     arch: arm64
+    # Needed to work around travis-ci bugs that freeze output, then timeout
+    filter_secrets: false
     services: docker
     before_script:
       - git clone https://github.com/binrats/gtirb
