@@ -47,26 +47,26 @@ jobs:
     after_script: docker container stop binrattester
 
     # This only needs to be updated if the dependencies need updating
-    #  - stage: DockeriseBase
-    #    name: "Build amd base docker images"
-    #    arch: amd64
-    #    services: docker
-    #    before_script:
-    #      - docker pull debian:buster
-    #    script:
-    #      - docker build -t binrats/ddisasm-base:amd64-latest binrats/amd64/ddisasm-base
-    #      - docker login -u mmcgr -p $DOCKER_TOKEN
-    #      - docker push binrats/ddisasm-base:amd64-latest
-    #  - stage: DockeriseBase
-    #    name: "Build arm base docker images"
-    #    arch: arm64
-    #    services: docker
-    #    before_script:
-    #      - docker pull debian:buster
-    #    script:
-    #      - docker build -t binrats/ddisasm-base:arm64-latest binrats/arm64/ddisasm-base
-    #      - docker login -u mmcgr -p $DOCKER_TOKEN
-    #      - docker push binrats/ddisasm-base:arm64-latest
+  - stage: DockeriseBase
+    name: "Build amd base docker images"
+    arch: amd64
+    services: docker
+    before_script:
+      - docker pull debian:buster
+    script:
+      - docker build -t binrats/ddisasm-base:amd64-latest binrats/amd64/ddisasm-base
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker push binrats/ddisasm-base:amd64-latest
+  - stage: DockeriseBase
+    name: "Build arm base docker images"
+    arch: arm64
+    services: docker
+    before_script:
+      - docker pull debian:buster
+    script:
+      - docker build -t binrats/ddisasm-base:arm64-latest binrats/arm64/ddisasm-base
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker push binrats/ddisasm-base:arm64-latest
 
   - stage: Dockerise
     name: "Build amd 3.0 docker images"
