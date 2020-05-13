@@ -41,7 +41,7 @@ jobs:
     script:
       - docker exec binrattester /bin/sh -c "cd /ddisasm/gtirb && git checkout -b d3 D3.0 && cmake . -Bbuild && cd build && make install -j32"
       - docker exec binrattester /bin/sh -c "cd /ddisasm/gtirb-pprinter && cmake . -Bbuild && cd build && make install -j32"
-      - docker exec binrattester /bin/sh -c "cd /ddisasm && cmake -DLIEF_ROOT=/usr . -Bbuild && cd build && make install -j32"
+      - docker exec binrattester /bin/sh -c "cd /ddisasm && cmake -DLIEF_ROOT=/usr . -Bbuild && cd build && make install -j1"
         # Now register the new libraries so they are usable
       - docker exec binrattester /bin/sh -c "ldconfig"
       - travis_wait 20 sleep 20m & docker exec binrattester /bin/sh -c "cd /ddisasm/examples/ex1 && make && ddisasm --dwarf ex"
