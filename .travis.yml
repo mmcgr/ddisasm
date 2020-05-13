@@ -8,6 +8,7 @@ stages:
   - Build
   - DockeriseBase
   - Dockerise
+  - Manifestise
 
 jobs:
   include:
@@ -108,4 +109,31 @@ jobs:
       - docker build -t binrats/ddisasm:arm64-latest binrats/arm64/ddisasmLatest
       - docker login -u mmcgr -p $DOCKER_TOKEN
       - docker push  binrats/ddisasm:arm64-latest
+
+  - stage: Manifestise
+    name: "Build combined base docker images"
+    arch: amd64
+    services: docker
+    script:
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker manifest create binrats/ddisasm-base:latest binrats/ddisasm-base:amd64-latest binrats/ddisasm-base:arm64-latest
+      - docker push binrats/ddisasm-base:latest
+
+  - stage: Manifestise
+    name: "Build combined 3.0 docker images"
+    arch: amd64
+    services: docker
+    script:
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker manifest create binrats/ddisasm:3.0 binrats/ddisasm:amd64-3.0 binrats/ddisasm:arm64-3.0
+      - docker push binrats/ddisasm:3.0
+
+  - stage: Manifestise
+    name: "Build combined lts docker images"
+    arch: amd64
+    services: docker
+    script:
+      - docker login -u mmcgr -p $DOCKER_TOKEN
+      - docker manifest create binrats/ddisasm:latest binrats/ddisasm:amd64-latest binrats/ddisasm:arm64-latest
+      - docker push binrats/ddisasm:latest
 
