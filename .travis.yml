@@ -2,6 +2,8 @@ os: linux
 dist: bionic
 arch: amd64
 language: generic
+#workaround for travis-ci bugs
+filter_secrets: false
 
 jobs:
   include:
@@ -26,7 +28,6 @@ jobs:
     name: "Build dependencies"
     arch: arm64
     # Needed to work around travis-ci bugs that freeze output, then timeout
-    filter_secrets: false
     services: docker
     before_script:
       - git clone https://github.com/binrats/gtirb
