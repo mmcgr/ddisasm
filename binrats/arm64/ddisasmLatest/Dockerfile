@@ -10,7 +10,7 @@ RUN cd /binrats/gtirb-pprinter && cmake . -Bbuild && cd build && make install -j
 
 RUN git clone https://github.com/binrats/ddisasm
 
-RUN cd /binrats/ddisasm && cmake -DLIEF_ROOT=/usr . -Bbuild && cd build && make install -j32
+RUN cd /binrats/ddisasm && cmake -DLIEF_ROOT=/usr . -Bbuild && cd build && make install -j2
 
 # Make sure the new libs are found
 RUN ldconfig
